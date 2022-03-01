@@ -1,1 +1,1 @@
-app: python currency_bot.py
+web: python currency_bot.py
