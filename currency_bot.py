@@ -95,9 +95,12 @@ def daily_report():
 
     send_message_to_bot(total_message)
 
+daily_report()
+
+
 schedule.every().day.at("11:00").do(daily_report)
 schedule.every().day.at("15:00").do(daily_report)
-schedule.every().day.at("01:10").do(daily_report)
+
 # run script infinitely
 while True:
     schedule.run_pending()
