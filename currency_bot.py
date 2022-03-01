@@ -1,3 +1,5 @@
+import json
+import time
 import requests
 import schedule
 from bs4 import BeautifulSoup
@@ -36,14 +38,15 @@ def find_currency_credo():
     return credo_list
 
 
-""" def find_mbc():
-    soup =call_url('https://www.mbc.com.ge/')
-    quotes = soup.find_all('table')
-    credo_list = []
+def find_currency_mbc():
+    soup = call_url('https://fxrates.mbc.com.ge:8022/api/fxrates/mbc/commercial?fbclid=IwAR0YnhhhQgvHblGe06uyIwQmyv4s8ngxTjZInSVlTKvKNcMZshPdaoydFfo/api/fxrates/mbc/commercial')
+    quotes = str(soup.p)[3:-4]
+    mbc_list = []
+    json_obj = json.loads(quotes)
+    mbc_list.append(json_obj['FXRates'][4]['Buy'])
+    mbc_list.append(json_obj['FXRates'][4]['Sell'])
 
-    credo_list.append(quotes[1].text[20:25].replace(',', '.'))
-    credo_list.append(quotes[0].text[15:21].replace(',', '.'))
-    return credo_list """
+    return mbc_list
 
 
 def send_message_to_bot(text, chat_id='1288690761'):
@@ -52,13 +55,14 @@ def send_message_to_bot(text, chat_id='1288690761'):
     requests.post(bot + 'sendMessage', data=parameters)
 
 
-def daily_report(time):
+def daily_report():
+    moment = time.strftime("%H:%M")
     currency_dict = {}
     currency_state = float(find_currency_state_bank())
-    time = time
-    total_message = f'Время {time} \n'
+    total_message = f'Время {moment} \n'
     currency_dict['Курс Доллара в Rico'] = float(find_currency_rico()[0])
     currency_dict['Курс Доллара в Credo'] = float(find_currency_credo()[0])
+    currency_dict['Курс Доллара в MBC'] = float(find_currency_mbc()[0])
 
     best_currency_value = max(currency_dict.values())
 
@@ -71,6 +75,11 @@ def daily_report(time):
         'Курс Доллара в Credo']:
         sell_message = 'Выгодно сдать доллары в Credo'
         safe = round((currency_dict['Курс Доллара в Credo'] - currency_state) * 900, 2)
+
+    if currency_state < currency_dict['Курс Доллара в MBC'] and best_currency_value == currency_dict[
+        'Курс Доллара в MBC']:
+        sell_message = 'Выгодно сдать доллары в MBC'
+        safe = round((currency_dict['Курс Доллара в MBC'] - currency_state) * 900, 2)
 
     else:
         sell_message = 'Не выгодно сдавать доллары сегодня'
@@ -85,11 +94,10 @@ def daily_report(time):
     total_message += f'{safe_message} \n'
 
     send_message_to_bot(total_message)
-    
-schedule.every().day.at("11:00").do(daily_report('11:00'))
-schedule.every().day.at("15:00").do(daily_report('15:00'))
-schedule.every().day.at("16:30").do(daily_report('16:30'))
 
+schedule.every().day.at("11:00").do(daily_report)
+schedule.every().day.at("15:00").do(daily_report)
+schedule.every().day.at("01:10").do(daily_report)
 # run script infinitely
 while True:
     schedule.run_pending()
