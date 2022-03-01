@@ -85,8 +85,10 @@ def daily_report(time):
     total_message += f'{safe_message} \n'
 
     send_message_to_bot(total_message)
-
-schedule.every().day.at("15:27").do(daily_report('15:30'))
+    
+schedule.every().day.at("11:00").do(daily_report('11:00'))
+schedule.every().day.at("15:00").do(daily_report('15:00'))
+schedule.every().day.at("16:30").do(daily_report('16:30'))
 
 # run script infinitely
 while True:
