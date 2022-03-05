@@ -22,11 +22,10 @@ def find_currency_rico():
 
 
 def find_currency_state_bank():
-    soup = call_url('http://www.finmarket.ru/currency/rates/?id=10122')
-    quotes = soup.find_all('div', class_='info')
-    state_rate = quotes[0].text[3:9].replace(',', '.')
-
-    return state_rate
+    soup = call_url('https://nbg.gov.ge/en/monetary-policy/currency')
+    quotes = soup.find_all('span', class_='text-body1 font-normal font-md leading-body1 text-grey-800')[-6]
+    quotes = quotes.text.replace(',', '.')
+    return quotes
 
 
 def find_currency_credo():
@@ -69,22 +68,22 @@ def daily_report():
     if currency_state < currency_dict['Курс Доллара в Rico'] and best_currency_value == currency_dict[
         'Курс Доллара в Rico']:
         sell_message = 'Выгодно сдать доллары в Rico'
-        safe = round((currency_dict['Курс Доллара в Rico'] - currency_state) * 900, 2)
+        safe = round((currency_dict['Курс Доллара в Rico'] - currency_state) * 1000, 2)
 
     if currency_state < currency_dict['Курс Доллара в Credo'] and best_currency_value == currency_dict[
         'Курс Доллара в Credo']:
         sell_message = 'Выгодно сдать доллары в Credo'
-        safe = round((currency_dict['Курс Доллара в Credo'] - currency_state) * 900, 2)
+        safe = round((currency_dict['Курс Доллара в Credo'] - currency_state) * 1000, 2)
 
     if currency_state < currency_dict['Курс Доллара в MBC'] and best_currency_value == currency_dict[
         'Курс Доллара в MBC']:
         sell_message = 'Выгодно сдать доллары в MBC'
-        safe = round((currency_dict['Курс Доллара в MBC'] - currency_state) * 900, 2)
+        safe = round((currency_dict['Курс Доллара в MBC'] - currency_state) * 1000, 2)
 
     else:
         sell_message = 'Не выгодно сдавать доллары сегодня'
-        safe = round((best_currency_value - currency_state) * 900, 2)
-    safe_message = f'Выгода за 900 долларов составит {safe} Лари'
+        safe = round((best_currency_value - currency_state) * 1000, 2)
+    safe_message = f'Выгода за 1000 долларов составит {safe} Лари'
 
     total_message += f'Курс Нац.Банка Грузии : {currency_state} \n'
 
@@ -95,11 +94,11 @@ def daily_report():
 
     send_message_to_bot(total_message)
 
-daily_report()
 
 
+
+schedule.every().day.at("7:00").do(daily_report)
 schedule.every().day.at("11:00").do(daily_report)
-schedule.every().day.at("15:00").do(daily_report)
 
 # run script infinitely
 while True:
