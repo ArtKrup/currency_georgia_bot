@@ -97,7 +97,7 @@ def daily_report():
 
 
 
-schedule.every().day.at("7:00").do(daily_report)
+schedule.every().day.at("07:00").do(daily_report)
 schedule.every().day.at("11:00").do(daily_report)
 
 # run script infinitely
